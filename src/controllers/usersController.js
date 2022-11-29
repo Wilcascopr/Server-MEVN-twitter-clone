@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken')
 
 const handleRegistration = async (req, res) => {
     // check for duplicates
-    const { handle, email, password } = req.body;
+    const { name, email, password } = req.body;
     const user = await User.findOne({ email })
 
     if (user) return res.status(400).json({ "message": "A user has already registered with this email"});
@@ -13,7 +13,7 @@ const handleRegistration = async (req, res) => {
     const hashedPwd = await bcrypt.hash(password, 10);
 
     const newUser = new User({
-        handle,
+        name,
         email,
         password: hashedPwd,
         refreshToken: ''
@@ -85,7 +85,7 @@ const handleRefresh = async (req, res) => {
                     { expiresIn: '30m'}
                 )
     
-                res.json({accessToken})
+                res.json({ name: user.name, email: user.email, accessToken})
             }
         )
     } else {
@@ -117,4 +117,19 @@ const handleLogout = async (req, res) => {
 
 }
 
-module.exports = { handleRegistration, handleLogin, handleRefresh, handleLogout }
+const getUserData = async (req, res) => {
+
+    const id = req.params.id
+
+    if (!id) return res.status(400).json({ "message": "Invalid"})
+
+    const user = await User.findById(id);
+
+    if (user) {
+        res.json({userID: user.id,name: user.name, email: user.email})
+    } else {
+        return res.status(403).json({ "message": "Invalid"});
+    }
+}
+
+module.exports = { handleRegistration, handleLogin, handleRefresh, handleLogout, getUserData }

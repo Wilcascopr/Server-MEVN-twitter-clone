@@ -1,44 +1,50 @@
 const Tweet = require('../models/Tweet');
 const User = require('../models/User')
+const jwt = require('jsonwebtoken');
+const keys = require('../config/keys')
 
 const handleNewTweet = async (req, res) => {
     const { text, tags } = req.body;
     
-    if (!req.cookies?.jwt) res.status(400).send('You have to be logged in to tweet');
+    if (!req.cookies?.jwt) return res.status(400).json({ "message": "A user has already registered with this email"});
     const refreshToken = req.cookies.jwt
 
-    if ( !text || tags.length === 0 ) res.status(400).send('Invalid tweet');
+    if ( !text ) return res.status(400).json({ "message": "A user has already registered with this email"});
 
-    const authUser = await User.findOne({ refreshToken });
+    try {
 
-    if (!authUser) return res.status(400).send('You have to be logged in to tweet');
+        const authUser = await User.findOne({ refreshToken });
 
-    jwt.verify(
-        refreshToken,
-        keys.RefreshTokenSecret,
-        async (err, decoded) => {
-            if (err || decoded.email !== authUser.email) return res.status(403).json({ "message": "Invalid"});
+        const newTweet = new Tweet({
+            user: authUser.id,
+            text,
+            tags,
+            likes: 0
+        })
 
-            const newTweet = new Tweet({
-                user: authUser.id,
-                text,
-                tags
-            })
+        await newTweet.save()
 
-            await newTweet.save()
+        res.json(newTweet)
 
-            res.sendStatus(200)
-        }
-    )
+    } catch(error) {
+
+        res.json({ "message": "A user has already registered with this email"})
+
+    }
         
 }   
 
 const handleGetTweets = async (req, res) => {
-    const tweets = await Tweet.find().sort({ date: -1 })
+    const page = req.params.page;
+    let paging = 50;
+    
+    const tweets = await Tweet.find().sort({ date: -1 });
+
+    if (paging > tweets.length - page) paging = tweets.length;
 
     if (!tweets) return res.sendStatus(500);
 
-    res.json(tweets)
+    res.json(tweets.slice(page, page + paging))
 }
 
 const handleUserTweets = async (req, res) => {

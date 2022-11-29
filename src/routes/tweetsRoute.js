@@ -3,7 +3,7 @@ const { handleNewTweet, handleGetTweets, handleUserTweets, handleGetTweet } = re
 const verifyJWT = require('../middleware/verifyJWT')
 
 router.route('/create').post(verifyJWT, handleNewTweet)
-router.get('./', handleGetTweets)
+router.get('/:page', handleGetTweets)
 router.get('/user/:user_id', handleUserTweets);
 router.get('/:tweet_id', handleGetTweet)
 

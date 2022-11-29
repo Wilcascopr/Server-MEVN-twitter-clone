@@ -13,6 +13,9 @@ const TweetSchema = new Schema({
     tags: {
         type: Array,
     },
+    likes: {
+        type: Number
+    },
     date: {
         type: Date,
         default: Date.now
