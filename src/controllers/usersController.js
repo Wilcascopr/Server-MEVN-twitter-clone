@@ -85,7 +85,7 @@ const handleRefresh = async (req, res) => {
                     { expiresIn: '30m'}
                 )
     
-                res.json({ name: user.name, email: user.email, accessToken})
+                res.json({ userID: user.id, name: user.name, email: user.email, accessToken})
             }
         )
     } else {
@@ -113,7 +113,7 @@ const handleLogout = async (req, res) => {
     await user.save();
 
     res.clearCookie('jwt', {httpOnly: true, sameSite: 'None', secure: true});
-    res.stauts(204).send('logout successful')
+    res.status(204).send('logout successful')
 
 }
 

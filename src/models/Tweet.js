@@ -10,11 +10,13 @@ const TweetSchema = new Schema({
         type: String,
         required: true
     },
-    tags: {
-        type: Array,
-    },
     likes: {
-        type: Number
+        type: [Schema.Types.ObjectId],
+        ref: 'users'
+    },
+    comments: {
+        type: [Schema.Types.ObjectId],
+        ref: 'tweets'
     },
     date: {
         type: Date,

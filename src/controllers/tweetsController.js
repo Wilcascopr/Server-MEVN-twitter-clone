@@ -1,15 +1,13 @@
 const Tweet = require('../models/Tweet');
-const User = require('../models/User')
-const jwt = require('jsonwebtoken');
-const keys = require('../config/keys')
+const User = require('../models/User');
 
 const handleNewTweet = async (req, res) => {
     const { text, tags } = req.body;
     
-    if (!req.cookies?.jwt) return res.status(400).json({ "message": "A user has already registered with this email"});
+    if (!req.cookies?.jwt) return res.status(400).json({ "message": "You need to be logged in to post"});
     const refreshToken = req.cookies.jwt
 
-    if ( !text ) return res.status(400).json({ "message": "A user has already registered with this email"});
+    if ( !text ) return res.status(400).json({ "message": "Please fill the text field"});
 
     try {
 
@@ -19,7 +17,6 @@ const handleNewTweet = async (req, res) => {
             user: authUser.id,
             text,
             tags,
-            likes: 0
         })
 
         await newTweet.save()
@@ -32,7 +29,27 @@ const handleNewTweet = async (req, res) => {
 
     }
         
-}   
+}  
+
+const  handleLikesandComments = async (req, res) => {
+
+    const { _id, likes, comments } = req.body;
+    
+    if ( !likes || !comments) return res.status(400).json({ "message": "Bad request"});
+
+    try {
+
+        await Tweet.findByIdAndUpdate(_id, { likes, comments })
+        
+        res.json({'message': 'updated succsesfully'})
+
+    } catch(error) {
+
+        res.json({ "message": "There was an error finding that tweet"})
+
+    }
+
+}
 
 const handleGetTweets = async (req, res) => {
     const page = req.params.page;
@@ -42,9 +59,12 @@ const handleGetTweets = async (req, res) => {
 
     if (paging > tweets.length - page) paging = tweets.length;
 
-    if (!tweets) return res.sendStatus(500);
+    if (!tweets) {
+        return res.sendStatus(500)
+    } else {
+        res.json(tweets.slice(page, page + paging))
+    }
 
-    res.json(tweets.slice(page, page + paging))
 }
 
 const handleUserTweets = async (req, res) => {
@@ -63,4 +83,4 @@ const handleGetTweet = async (req, res) => {
     res.json(tweet)
 }
 
-module.exports = { handleNewTweet, handleGetTweets, handleUserTweets, handleGetTweet };
+module.exports = { handleNewTweet, handleGetTweets, handleUserTweets, handleGetTweet, handleLikesandComments };
