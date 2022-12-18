@@ -53,7 +53,7 @@ const  handleLikesandContent = async (req, res) => {
 
 const handleGetTweets = async (req, res) => {
     const page = req.params.page;
-    let paging = 50;
+    let paging = 20;
     
     const tweets = await Tweet.find().sort({ date: -1 });
 
@@ -160,7 +160,15 @@ const handleDelete = async (req, res) => {
     if (!id) return res.sendStatus(400);
 
     try {
-        await Tweet.findByIdAndDelete(id)
+        await Tweet.findByIdAndDelete(id);
+
+        const inResponses = await Tweet.findOne({ comments: id })
+        if (inResponses) {
+            inResponses.comments = inResponses.comments.filter(ID => ID != id);
+            console.log(inResponses.comments);
+            await inResponses.updateOne({ comments: inResponses.comments });
+        }
+
         res.json({message: 'deleted successfully'})
     } catch(err) {
         res.sendStatus(500);
