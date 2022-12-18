@@ -31,15 +31,15 @@ const handleNewTweet = async (req, res) => {
         
 }  
 
-const  handleLikesandComments = async (req, res) => {
+const  handleLikesandContent = async (req, res) => {
 
-    const { _id, likes, comments } = req.body;
+    const { _id, likes, text } = req.body;
     
-    if ( !likes || !comments) return res.status(400).json({ "message": "Bad request"});
+    if ( !likes || !text) return res.status(400).json({ "message": "Bad request"});
 
     try {
 
-        await Tweet.findByIdAndUpdate(_id, { likes, comments })
+        await Tweet.findByIdAndUpdate(_id, { likes, text })
         
         res.json({'message': 'updated succsesfully'})
 
@@ -68,7 +68,12 @@ const handleGetTweets = async (req, res) => {
 }
 
 const handleUserTweets = async (req, res) => {
-    const tweets = Tweet.find({ user: req.params.user_id });
+    
+    const user = req.params.id;
+
+    if (!user) return res.status(400).send('bad request');
+
+    const tweets = await Tweet.find({ user });
 
     if (!tweets) return res.sendStatus(400);
 
@@ -76,11 +81,91 @@ const handleUserTweets = async (req, res) => {
 }
 
 const handleGetTweet = async (req, res) => {
-    const tweet = await Tweet.findById(req,params.id);
+      
+    const tweet = await Tweet.findById(req.params.id);
 
-    if (!tweet)  return res.sendStatus(400);
+    if (!tweet) return res.sendStatus(400);
 
     res.json(tweet)
 }
 
-module.exports = { handleNewTweet, handleGetTweets, handleUserTweets, handleGetTweet, handleLikesandComments };
+
+const handleResponse = async (req, res) => {
+
+    const id = req.params.id;
+    const { text, tags} = req.body;
+
+    if (!id || !text) return res.sendStatus(400);
+
+    if (!req.cookies?.jwt) return res.status(400).json({ "message": "You need to be logged in to post"});
+    const refreshToken = req.cookies.jwt
+
+    const tweet = await Tweet.findById(id);
+
+    if (!tweet) return res.sendStatus(400)
+
+    const user = await User.findOne( { refreshToken } );
+
+    if (!user) return res.sendStatus(403)
+
+    try {
+
+        const newTweet = new Tweet({
+            user: user.id,
+            text,
+            tags
+        });
+
+        await newTweet.save()
+
+        tweet.comments.push(newTweet.id)
+
+        await tweet.updateOne({ comments: tweet.comments })
+
+        res.json({'response': 'response sucessfully done'})
+
+    } catch(err) {
+
+        res.sendStatus(500)
+
+    }
+
+}
+
+
+const handleReplyTweets = async (req, res) => {
+    const tweetsID = req.body.tweets;
+
+    const tweets = [];
+
+    tweetsID.forEach(async (id) => {
+        try {
+            const tweet = await Tweet.findById(id)
+            tweets.push(tweet)
+            if (tweetsID.length === tweets.length) {
+                res.json(tweets)
+            }
+        } catch (err) {
+            res.sendStatus(500)
+            throw err;
+        }
+    });
+    
+}
+
+const handleDelete = async (req, res) => {
+
+    const id = req.params.id;
+
+    if (!id) return res.sendStatus(400);
+
+    try {
+        await Tweet.findByIdAndDelete(id)
+        res.json({message: 'deleted successfully'})
+    } catch(err) {
+        res.sendStatus(500);
+    }
+
+}
+
+module.exports = { handleNewTweet, handleGetTweets, handleUserTweets, handleGetTweet, handleLikesandContent, handleResponse, handleReplyTweets, handleDelete };

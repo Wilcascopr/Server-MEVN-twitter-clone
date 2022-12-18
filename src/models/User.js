@@ -14,6 +14,17 @@ const UserSchema = new Schema({
         type: String,
         required: true
     },
+    followers: {
+        type: [Schema.Types.ObjectId],
+        refs: 'users'
+    },
+    following: {
+        type: [Schema.Types.ObjectId],
+        refs: 'users'
+    },
+    bio: {
+        type: String
+    },
     date: {
         type: Date,
         default: Date.now

@@ -85,7 +85,15 @@ const handleRefresh = async (req, res) => {
                     { expiresIn: '30m'}
                 )
     
-                res.json({ userID: user.id, name: user.name, email: user.email, accessToken})
+                res.json({
+                    userID: user.id,
+                    name: user.name, 
+                    email: user.email, 
+                    followers: user.followers, 
+                    following: user.following,
+                    bio: user.bio,
+                    accessToken
+                })
             }
         )
     } else {
@@ -119,17 +127,69 @@ const handleLogout = async (req, res) => {
 
 const getUserData = async (req, res) => {
 
-    const id = req.params.id
+    const id = req.params.id;
 
     if (!id) return res.status(400).json({ "message": "Invalid"})
 
     const user = await User.findById(id);
 
     if (user) {
-        res.json({userID: user.id,name: user.name, email: user.email})
+        res.json({userID: user.id,name: user.name, email: user.email, followers: user.followers, following: user.following, bio: user.bio})
     } else {
         return res.status(403).json({ "message": "Invalid"});
     }
 }
 
-module.exports = { handleRegistration, handleLogin, handleRefresh, handleLogout, getUserData }
+const updateUser = async (req, res) => {
+
+    const { id, name, bio } = req.body;
+
+
+    if (!name && !bio) return res.sendStatus(400);
+
+    try {
+
+        await User.findByIdAndUpdate(id, { name, bio });
+        const user = await User.findById(id)
+
+        res.json({userID: user.id,name: user.name, email: user.email, followers: user.followers, following: user.following, bio: user.bio})
+
+    } catch(err) {
+
+        return res.sendStatus(500)
+
+    }
+
+}
+
+const handleFollow = async (req, res) => {
+    const { userFollowing, userFollowed } = req.body;
+
+    
+    console.log(userFollowed, userFollowing);
+
+    if (!userFollowed || !userFollowing) return res.sendStatus(400);
+
+    try {
+
+        await User.findByIdAndUpdate(userFollowed.id, { followers: userFollowed.followers });
+        await User.findByIdAndUpdate(userFollowing.id, { following: userFollowing.following });
+
+    } catch (err) {
+
+        return res.sendStatus(404);
+    }
+
+}
+
+const handleUsers = async (req, res) => {
+    
+    const users = await User.find().sort({ followers: -1 });
+
+    if (!users) return res.sendStatus(500);
+
+    res.json(users);
+
+}
+
+module.exports = { handleRegistration, handleLogin, handleRefresh, handleLogout, getUserData, updateUser, handleFollow, handleUsers }
