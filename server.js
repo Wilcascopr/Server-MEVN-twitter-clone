@@ -20,7 +20,7 @@ app.use(morgan('dev'))
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-    origin: process.env.ALLOWED_ORIGIN || 'http://localhost:8080',
+    origin: [process.env.ALLOWED_ORIGIN, 'http://localhost:8080'],
     methods: ['GET', 'POST', 'DELETE', 'PUT'],
     credentials: true
 }))
