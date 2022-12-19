@@ -165,7 +165,6 @@ const handleDelete = async (req, res) => {
         const inResponses = await Tweet.findOne({ comments: id })
         if (inResponses) {
             inResponses.comments = inResponses.comments.filter(ID => ID != id);
-            console.log(inResponses.comments);
             await inResponses.updateOne({ comments: inResponses.comments });
         }
 

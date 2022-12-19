@@ -22,7 +22,7 @@ const handleRegistration = async (req, res) => {
         await newUser.save()
         res.json({"message": "Welcome, Sign up successful"})
     } catch(err) {
-        console.log(err)
+        res.sendStatus(500)
     }
 }
 
@@ -166,8 +166,6 @@ const handleFollow = async (req, res) => {
     const { userFollowing, userFollowed } = req.body;
 
     
-    console.log(userFollowed, userFollowing);
-
     if (!userFollowed || !userFollowing) return res.sendStatus(400);
 
     try {

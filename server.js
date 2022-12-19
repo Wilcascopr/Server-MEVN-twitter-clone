@@ -7,6 +7,8 @@ const tweetsRoute = require('./src/routes/tweetsRoute')
 const usersRoute = require('./src/routes/usersRoute');
 const morgan = require('morgan')
 
+require('dotenv').config()
+
 // connect to mongoDB
 connectDB();
 
