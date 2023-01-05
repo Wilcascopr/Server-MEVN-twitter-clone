@@ -138,18 +138,17 @@ const handleReplyTweets = async (req, res) => {
 
     const tweets = [];
 
-    tweetsID.forEach(async (id) => {
+    await tweetsID.forEach(async (id) => {
         try {
             const tweet = await Tweet.findById(id)
-            tweets.push(tweet)
-            if (tweetsID.length === tweets.length) {
-                res.json(tweets)
-            }
+            if (tweet) tweets.push(tweet);
         } catch (err) {
             res.sendStatus(500)
             throw err;
         }
     });
+
+    res.json(tweets);
     
 }
 
