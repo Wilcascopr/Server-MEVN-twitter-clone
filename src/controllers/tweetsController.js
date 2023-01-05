@@ -142,7 +142,7 @@ const handleReplyTweets = async (req, res) => {
         try {
             const tweet = await Tweet.findById(id)
             if (tweet) tweets.push(tweet);
-            if (tweet.length === tweetsID.length) {
+            if (tweets.length === tweetsID.length) {
                 res.json(tweets);
             }
         } catch (err) {
@@ -163,7 +163,7 @@ const handleDelete = async (req, res) => {
 
         const inResponses = await Tweet.findOne({ comments: id })
         if (inResponses) {
-            inResponses.comments = inResponses.comments.filter(ID => ID != id);
+            inResponses.comments = inResponses.comments.filter(ID => ID !== id);
             await inResponses.updateOne({ comments: inResponses.comments });
         }
 
