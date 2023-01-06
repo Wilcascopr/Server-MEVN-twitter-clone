@@ -135,21 +135,21 @@ const handleResponse = async (req, res) => {
 
 const handleReplyTweets = async (req, res) => {
     const tweetsID = req.body.tweets;
-
+    console.log(tweetsID);
     const tweets = [];
 
-    tweetsID.forEach(async (id) => {
+    for (const id of tweetsID) {
         try {
-            const tweet = await Tweet.findById(id)
+            const tweet = await Tweet.findById(id);
             if (tweet) tweets.push(tweet);
-            if (tweets.length === tweetsID.length) {
-                res.json(tweets);
-            }
         } catch (err) {
             res.sendStatus(500)
             throw err;
         }
-    });    
+    }
+
+    res.json(tweets);
+  
 }
 
 const handleDelete = async (req, res) => {
@@ -163,7 +163,7 @@ const handleDelete = async (req, res) => {
 
         const inResponses = await Tweet.findOne({ comments: id })
         if (inResponses) {
-            inResponses.comments = inResponses.comments.filter(ID => ID !== id);
+            inResponses.comments = inResponses.comments.filter(ID => ID != id);
             await inResponses.updateOne({ comments: inResponses.comments });
         }
 
